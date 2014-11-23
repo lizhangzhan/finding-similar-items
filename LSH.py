@@ -1,17 +1,23 @@
-from mrjob.job import MRJob
 import json
+from mrjob.job import MRJob
+from pprint import pprint
 
 char_space = 'abcdefghijklmnopqrstuvwxyz' # + ' 1234567890.,+-*/\'"()_\n!@#$%^&=:?;<>[]\t\\|{}'
+char_space_size = len(char_space)
 char_id = {c:i for i,c in enumerate(char_space)}
-shingle_id = dict()
-doc_id = dict()
+shingle_size = 5
+shingle_id = {}
+doc_id = {}
 
 def hash_shingle(shingle):
-    global char_id
-    l = len(char_id)
-    shingle += (5-len(shingle)) * '0'
+    """Returns a base-26 number represented in base-10.
+    26 is the size of char_space. Might go higher if more characters considered.
+    """
+    # Append a's if shingle length less than shingle_size.
+    shingle += (shingle_size-len(shingle)) * 'a'
     h = 0
-    for i in xrange(5):
+    l = char_space_size
+    for i in xrange(shingle_size):
         h += (l ** i) * char_id[shingle[i]]
     return h
 
@@ -24,9 +30,10 @@ class FindSimilarity(MRJob):
         # Shingle size is 5.
         shingles = []
         for i in xrange(len(text)-4):
-            shingle = text[i:i+5]
-            if hash_shingle(shingle) not in shingle_id:
-                shingle_id[hash_shingle(shingle)] = shingle
+            shingle = text[i:i+shingle_size]
+            _hash = hash_shingle(shingle)
+            if _hash not in shingle_id:
+                shingle_id[_hash] = shingle
             shingles.append(shingle)
         yield 1, (hash(date), shingles)
 
@@ -82,9 +89,10 @@ class FindSimilarity(MRJob):
         bands = 4
         sig_len = len(sig_mat[0])
         temp = sig_len / bands
-        import pprint
-        pprint.pprint(sig_mat)
+
+        pprint(sig_mat)
         print docs
+
         for i in xrange(bands):
             yield i, (mx_minhash, sig_mat[i:(i+1)*temp], docs)
     
