@@ -1,7 +1,7 @@
 from mrjob.job import MRJob
 import json
 
-char_space = 'abcdefghijklmnopqrstuvwxyz' # ' 1234567890.,+-*/\'"()_\n!@#$%^&=:?;<>[]\t\\|{}'
+char_space = 'abcdefghijklmnopqrstuvwxyz' # + ' 1234567890.,+-*/\'"()_\n!@#$%^&=:?;<>[]\t\\|{}'
 char_id = {c:i for i,c in enumerate(char_space)}
 shingle_id = dict()
 doc_id = dict()
@@ -75,13 +75,6 @@ class FindSimilarity(MRJob):
             docs[doc_id] = doc_ts
 
         num_docs = len(docs)
-        """
-        # LSH might come in handy
-        # Since this is O(n^2)
-        for i in xrange(num_docs):
-            for j in xrange(i+1, num_docs):
-                yield (docs[i], docs[j]), (mx_minhash, sig_mat)
-        """
         # LSH implemented here.
         # Give each mapper one band to deal with.
         # depending on the # of bands, results may vary
