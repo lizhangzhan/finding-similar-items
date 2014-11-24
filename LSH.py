@@ -23,31 +23,34 @@ def hash_shingle(shingle):
 
 class FindSimilarity(MRJob):
     def mapper0(self, _, line):
+        """Yields a (date_hash, shingles) pair for an email."""
         email = json.loads(line)
         date = email['date']
         text = email['text'].lower()
         text = ''.join([c for c in text if c in char_space])
-        # Shingle size is 5.
+
+        # Generate shingles from text.
+        # Store newfound shingles in global dict shingle_id.
         shingles = []
-        for i in xrange(len(text)-4):
+        for i in xrange(len(text)+1-shingle_size):
             shingle = text[i:i+shingle_size]
-            _hash = hash_shingle(shingle)
-            if _hash not in shingle_id:
-                shingle_id[_hash] = shingle
+            shingle_id.setdefault(hash_shingle(shingle), shingle)
             shingles.append(shingle)
+
         yield 1, (hash(date), shingles)
 
     def reducer0(self, _, docs):
-        shingles = set()
+        """Yields a (id, doc_timestamp, doc_shingles) and
+        the global shingle set for each email.
+        """
+        all_shingles = set()
         docs = list(docs)
         for _, doc_shingles in docs:
-            shingles.update(set(doc_shingles))
-        shingles = list(shingles)
-        shingles.sort()
-        count = 0
-        for doc_ts, doc_shingles in docs:
-            yield (count, doc_ts, doc_shingles), shingles
-            count += 1
+            all_shingles.update(set(doc_shingles))
+        all_shingles = list(all_shingles)
+        all_shingles.sort()
+        for i, doc in enumerate(docs):
+            yield (i,) + doc, shingles
 
     def mapper1(self, doc, shingles):
         sig_len = 10
