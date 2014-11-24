@@ -102,19 +102,23 @@ class FindSimilarity(MRJob):
             yield i, (mx_minhash, rows_in_band, docs)
     
     def mapper2(self, band_id, hash_maxval_band_and_doc_ids):
+        """Receive part of doc's minhashes and compute band similarity."""
         hash_maxval, band, doc_ids = hash_maxval_band_and_doc_ids
         hmx = hash_maxval # shortform!
-        buckets = dict()
+
+        buckets = {}
         num_docs = len(band[0])
         band_len = len(band)
+
         for i in xrange(num_docs):
+            # For each doc, compute hash and append to a hash->doc map.
             doc_hash = 1
             for j in xrange(band_len):
                 doc_hash = (doc_hash + band[j][i] * hmx) % 1000000007
-            if not buckets.has_key(doc_hash):
-                buckets[doc_hash] = []
+            buckets.setdefault(doc_hash, [])
             buckets[doc_hash].append(doc_ids[str(i)])
 
+        # Yield items in the same bucket, since they are similar.
         for k, v in buckets.items():
             if len(v) > 1:
                 for i in xrange(len(v)-1):
@@ -122,6 +126,7 @@ class FindSimilarity(MRJob):
                         yield None, (v[i], v[j])
 
     def reducer2(self, _, doc_sims):
+        """Yield each pair from a list of all pairs."""
         for doc_sim in doc_sims:
             yield None, doc_sim
     
