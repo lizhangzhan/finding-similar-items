@@ -1,6 +1,7 @@
 import json
 from mrjob.job import MRJob
 from pprint import pprint
+from sys import maxint
 
 char_space = 'abcdefghijklmnopqrstuvwxyz' # + ' 1234567890.,+-*/\'"()_\n!@#$%^&=:?;<>[]\t\\|{}'
 char_space_size = len(char_space)
@@ -50,54 +51,55 @@ class FindSimilarity(MRJob):
         all_shingles = list(all_shingles)
         all_shingles.sort()
         for i, doc in enumerate(docs):
-            yield (i,) + doc, shingles
+            yield (i,) + doc, all_shingles
 
     def mapper1(self, doc, shingles):
+        """For each doc, compute and return signature from it's shingles"""
         sig_len = 10
-        col = [-1] * sig_len
+        sig = [maxint] * sig_len
         doc_id, doc_ts, doc_shingles = doc
         shingles_len = len(shingles)
-        for i in xrange(shingles_len):
-            if shingles[i] in doc_shingles:
+
+        for i, shingle in enumerate(shingles):
+            if shingle in doc_shingles:
                 for j in xrange(sig_len):
-                    if col[j] == -1:
-                        col[j] = (i*2*j+i+1) % shingles_len
-                    else:
-                        col[j] = min(col[j], (i*2*j+i+1) % shingles_len)
+                    hash_val = (i*j*2 + i+1) % shingles_len
+                    sig[j] = min(sig[j], hash_val)
 
-        yield None, ((doc_id, doc_ts), col)
+        yield None, ((doc_id, doc_ts), sig)
 
-    def reducer1(self, _, docs_and_col):
-        docs_and_col = list(docs_and_col)
-        sig_mat_rows = len(docs_and_col[0][1])
-        sig_mat_cols = len(docs_and_col)
-        sig_mat = [[0 for i in xrange(sig_mat_cols)] for j in xrange(sig_mat_rows)]
+    def reducer1(self, _, docs_and_sigs):
+        """Receive all docs with their signatures.
+        Return part of signature matrix for all docs to each band."""
+        docs_and_sigs = list(docs_and_sigs)
+        sigmat_rows = len(docs_and_sigs[0][1]) # = sig_len
+        sigmat_cols = len(docs_and_sigs)
+        sigmat = [[0 for i in xrange(sigmat_cols)] for j in xrange(sigmat_rows)]
+
         i = 0
-        docs = dict()
+        docs = {}
         mx_minhash = 0
-        for doc_col in docs_and_col:
-            mx_minhash = max(mx_minhash, max(doc_col[1]))
-            doc_id, doc_ts = doc_col[0]
-            col = doc_col[1]
-            for j in xrange(sig_mat_rows):
-                sig_mat[j][i] = col[j]
+        # Construct signature matrix.
+        for doc_and_sig in docs_and_sigs:
+            mx_minhash = max(mx_minhash, max(doc_and_sig[1]))
+            doc_id, doc_ts = doc_and_sig[0]
+            sig = doc_and_sig[1]
+            for j in xrange(sigmat_rows):
+                sigmat[j][i] = sig[j]
             i += 1
             docs[doc_id] = doc_ts
 
-        num_docs = len(docs)
         # LSH implemented here.
         # Give each mapper one band to deal with.
         # depending on the # of bands, results may vary
         # try values 2 to 4
         bands = 4
-        sig_len = len(sig_mat[0])
-        temp = sig_len / bands
-
-        pprint(sig_mat)
-        print docs
+        sig_len = len(sigmat[0])
+        rows = sig_len / bands
 
         for i in xrange(bands):
-            yield i, (mx_minhash, sig_mat[i:(i+1)*temp], docs)
+            rows_in_band = sigmat[i*rows:(i+1)*rows]
+            yield i, (mx_minhash, rows_in_band, docs)
     
     def mapper2(self, band_id, hash_maxval_band_and_doc_ids):
         hash_maxval, band, doc_ids = hash_maxval_band_and_doc_ids
