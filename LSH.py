@@ -25,6 +25,8 @@ def hash_shingle(shingle):
 class FindSimilarity(MRJob):
     def mapper0(self, _, line):
         """Yields a (date_hash, shingles) pair for an email."""
+        # TODO: change identifier name to 'doc' since code works on other
+        # docs as well apart from just email.
         email = json.loads(line)
         date = email['date']
         text = email['text'].lower()
