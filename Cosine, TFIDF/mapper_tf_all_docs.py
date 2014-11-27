@@ -20,12 +20,7 @@ class MRWordFrequencyCount(MRJob):
 		yield word_docid['word'], (word_docid['docid'].encode('utf8', errors='replace'), ans)
     def reducer(self, word, value):
 		yield word, list(value)
-    """def steps(self):
-        return [
-            self.mr(mapper=self.mapper1,
-                    reducer=self.reducer1),
-            self.mr(reducer=self.reducer2)
-        ]"""
+
 if __name__ == '__main__':
 	MRWordFrequencyCount.run()
 	#print output_words

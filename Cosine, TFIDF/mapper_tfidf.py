@@ -17,12 +17,7 @@ class MRWordFrequencyCount(MRJob):
 				yield word, docid
     def reducer(self, word, docid):
 		yield word, set(docid)
-    """def steps(self):
-        return [
-            self.mr(mapper=self.mapper1,
-                    reducer=self.reducer1),
-            self.mr(reducer=self.reducer2)
-        ]"""
+
 if __name__ == '__main__':
 	MRWordFrequencyCount.run()
 	#print output_words
