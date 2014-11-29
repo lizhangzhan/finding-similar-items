@@ -24,12 +24,10 @@ def hash_shingle(shingle):
 
 class FindSimilarity(MRJob):
     def mapper0(self, _, line):
-        """Yields a (date_hash, shingles) pair for an email."""
-        # TODO: change identifier name to 'doc' since code works on other
-        # docs as well apart from just email.
-        email = json.loads(line)
-        date = email['date']
-        text = email['text'].lower()
+        """Yields a (date_hash, shingles) pair for a document."""
+        doc = json.loads(line)
+        date = doc['date']
+        text = doc['text'].lower()
         text = ''.join([c for c in text if c in char_space])
 
         # Generate shingles from text.
@@ -44,7 +42,7 @@ class FindSimilarity(MRJob):
 
     def reducer0(self, _, docs):
         """Yields a (id, doc_timestamp, doc_shingles) and
-        the global shingle set for each email.
+        the global shingle set for each doc.
         """
         all_shingles = set()
         docs = list(docs)
