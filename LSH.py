@@ -1,6 +1,5 @@
 import json
 from mrjob.job import MRJob
-from pprint import pprint
 from sys import maxint
 
 char_space = 'abcdefghijklmnopqrstuvwxyz' # + ' 1234567890.,+-*/\'"()_\n!@#$%^&=:?;<>[]\t\\|{}'
