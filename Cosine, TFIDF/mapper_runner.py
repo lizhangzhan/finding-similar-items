@@ -6,7 +6,9 @@ import csv
 mr_job = MRWordFrequencyCount(args=["QueryResults_inorder.csv"])
 idf = []
 tfidfvalues=[]
-"""with open('mapper_idf.txt', 'rb') as csvfile:
+
+"""
+with open('mapper_idf.txt', 'rb') as csvfile:
 	reader = csv.reader(csvfile, delimiter="\t")
 	t=0
 	for row in reader:
@@ -15,7 +17,9 @@ tfidfvalues=[]
 	print "idf:"+str(t)
 idf = np.array(idf, dtype=object)
 print "idf done"
-np.save('idf.npy', idf)"""
+np.save('idf.npy', idf)
+"""
+
 with mr_job.make_runner() as runner:
 	runner.run()	
 	l=0
@@ -24,6 +28,7 @@ with mr_job.make_runner() as runner:
 		#a = np.array(value)
 		#a = list(value)
 		tfidfvalues.append([key, value])
+
 print tfidfvalues[0]
 tfidfvalues = np.array(tfidfvalues, dtype=object)
 np.save('mapper_tf_all_docs_original.npy', tfidfvalues)

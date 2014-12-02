@@ -49,41 +49,36 @@ array7 = np.load("finaltf7.npy")
 array8 = np.load("finaltf8.npy")
 array9 = np.load("finaltf9.npy")
 queryvec = np.array(queryvector)
+
 for i in docs:
-	if(i<13678):
+	if i<13678:
 		#search in file 1
 		array = array1[i]
+	elif (i<13678+33730):
+		#search in file 2
+		array = array2[i-(13678)]
+	elif(i<13678+33730+40763):
+		#search in file 3
+		array = array3[i-(13678+33730)]
+	elif(i<13678+33730+40763+42782):
+		#search in file 4
+		array = array4[i-(13678+33730+40763)]
+	elif(i<13678+33730+40763+42782+44495):
+		#search in file 5
+		array = array5[i-(13678+33730+40763+42782)]
+	elif(i<13678+33730+40763+42782+44495+46616):
+		#search in file 6
+		array = array6[i-(13678+33730+40763+42782+44495)]
+	elif(i<13678+33730+40763+42782+44495+46616+47860):
+		#search in file 7
+		array = array7[i-(13678+33730+40763+42782+44495+46616)]
+	elif(i<13678+33730+40763+42782+44495+46616+47860+47222):
+		#search in file 8
+		array = array8[i-(13678+33730+40763+42782+44495+46616+47860)]
 	else:
-		if(i<13678+33730):
-			#search in file 2
-			array = array2[i-(13678)]
-		else:
-			if(i<13678+33730+40763):
-				#search in file 3
-				array = array3[i-(13678+33730)]
-			else:
-				if(i<13678+33730+40763+42782):
-					#search in file 4
-					array = array4[i-(13678+33730+40763)]
-				else:
-					if(i<13678+33730+40763+42782+44495):
-						#search in file 5
-						array = array5[i-(13678+33730+40763+42782)]
-					else:
-						if(i<13678+33730+40763+42782+44495+46616):
-							#search in file 6
-							array = array6[i-(13678+33730+40763+42782+44495)]
-						else:
-							if(i<13678+33730+40763+42782+44495+46616+47860):
-								#search in file 7
-								array = array7[i-(13678+33730+40763+42782+44495+46616)]
-							else:
-								if(i<13678+33730+40763+42782+44495+46616+47860+47222):
-									#search in file 8
-									array = array8[i-(13678+33730+40763+42782+44495+46616+47860)]
-								else:
-									#search in file 9
-									array = array9[i-(13678+33730+40763+42782+44495+46616+47860+47222)]
+		#search in file 9
+		array = array9[i-(13678+33730+40763+42782+44495+46616+47860+47222)]
+
 	value = 0
 	j=0
 	array = np.array(array)
@@ -95,6 +90,7 @@ for i in docs:
 			value += queryvec[j,1]*array[index_array][1]
 		j += 1
 	cosinevalues.append([i, value])
+
 cosinevalues = np.array(cosinevalues)
 cosinevalues = cosinevalues[cosinevalues[:,1].argsort()]
 np.savetxt('cosinevalues.txt', cosinevalues, delimiter=" ", fmt="%s")

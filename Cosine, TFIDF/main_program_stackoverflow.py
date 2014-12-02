@@ -3,6 +3,7 @@ import numpy as np
 import re
 import sys
 import math
+
 WORD_RE = re.compile(r"[\w']+")
 string = sys.argv[1]
 print "Given String: "+string

@@ -2,7 +2,9 @@
 from mrjob.protocol import JSONValueProtocol
 from mrjob.job import MRJob
 import re
+
 WORD_RE = re.compile(r"[\w']+")
+
 class MRWordCount(MRJob):
     #INPUT_PROTOCOL = JSONValueProtocol
     OUTPUT_PROTOCOL = JSONValueProtocol
