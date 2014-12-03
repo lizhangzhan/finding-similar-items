@@ -12,3 +12,6 @@ on the page.
 The plan is to take apart the stuff in this hurriedly
 built course project and make it modular enough for others
 to be able to use it.
+
+If you would like to use it, you'll need to have MRJob
+installed. MRJob is a map-reduce library for Python from Yelp.
