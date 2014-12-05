@@ -50,7 +50,7 @@ class FindSimilarity(MRJob):
         all_shingles = list(all_shingles)
         all_shingles.sort()
         for i, doc in enumerate(docs):
-            yield (i,) + doc, all_shingles
+            yield [i] + doc, all_shingles
 
     def mapper1(self, doc, shingles):
         """For each doc, compute and return signature from it's shingles"""
