@@ -40,6 +40,13 @@ def generate_shingles(text, shingle_len):
     return shingles
 
 class FindSimilarity(MRJob):
+    """Uses of the techniques implemented here:
+    Shingling - represent a doc as a set.
+    We use Jaccard Similarity here. Other forms of distance
+    measures may use something other than sets for comparison.
+    Minhashing - compress large sets into smaller ones.
+    Techniques other than minhashing also exist to do that job.
+    Locality-sensitive Hashing - because we don't want O(n^2) comparisons."""
     def mapper0(self, _, doc_raw):
         """Yields a (date_hash, shingles) pair for a document."""
         # Process the raw_doc depending on format (json, csv, etc).
