@@ -40,9 +40,10 @@ def generate_shingles(text, shingle_len):
     return shingles
 
 class FindSimilarity(MRJob):
-    def mapper0(self, _, line):
+    def mapper0(self, _, doc_raw):
         """Yields a (date_hash, shingles) pair for a document."""
-        doc = json.loads(line)
+        # Process the raw_doc depending on format (json, csv, etc).
+        doc = json.loads(doc_raw)
 
         id = get_unique_id()
         text = doc['text'].lower()
