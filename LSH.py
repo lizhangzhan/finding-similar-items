@@ -73,7 +73,7 @@ class FindSimilarity(MRJob):
         """For each doc, compute and return signature from it's shingles"""
         sig_len = 10
         sig = [maxint] * sig_len
-        doc_id, doc_ts, doc_shingles = doc
+        doc_id, doc_shingles = doc
         shingles_len = len(shingles)
 
         for i, shingle in enumerate(shingles):
@@ -82,28 +82,27 @@ class FindSimilarity(MRJob):
                     hash_val = (i*j*2 + i+1) % shingles_len
                     sig[j] = min(sig[j], hash_val)
 
-        yield None, ((doc_id, doc_ts), sig)
+        yield None, (doc_id, sig)
 
     def reducer1(self, _, docs_and_sigs):
         """Receive all docs with their signatures.
         Return part of signature matrix for all docs to each band."""
         docs_and_sigs = list(docs_and_sigs)
-        sigmat_rows = len(docs_and_sigs[0][1]) # = sig_len
+        sigmat_rows = len(docs_and_sigs[0]) # = sig_len
         sigmat_cols = len(docs_and_sigs)
         sigmat = [[0 for i in xrange(sigmat_cols)] for j in xrange(sigmat_rows)]
 
         i = 0
-        docs = {}
+        docs = []
         mx_minhash = 0
         # Construct signature matrix.
         for doc_and_sig in docs_and_sigs:
             mx_minhash = max(mx_minhash, max(doc_and_sig[1]))
-            doc_id, doc_ts = doc_and_sig[0]
-            sig = doc_and_sig[1]
+            doc_id, sig = doc_and_sig
             for j in xrange(sigmat_rows):
                 sigmat[j][i] = sig[j]
             i += 1
-            docs[doc_id] = doc_ts
+            docs.append(doc_id)
 
         # LSH implemented here.
         # Give each mapper one band to deal with.
@@ -132,7 +131,7 @@ class FindSimilarity(MRJob):
             for j in xrange(band_len):
                 doc_hash = (doc_hash + band[j][i] * hmx) % 1000000007
             buckets.setdefault(doc_hash, [])
-            buckets[doc_hash].append(doc_ids[str(i)])
+            buckets[doc_hash].append(doc_ids[i])
 
         # Yield items in the same bucket, since they are similar.
         for k, v in buckets.items():
