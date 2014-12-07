@@ -57,7 +57,7 @@ class FindSimilarity(MRJob):
         yield 1, (hash(id), shingles)
 
     def reducer0(self, _, docs):
-        """Yields a (id, doc_timestamp, doc_shingles) and
+        """Yields a (doc_id, doc_shingles) and
         the global shingle set for each doc.
         """
         all_shingles = set()
@@ -66,8 +66,8 @@ class FindSimilarity(MRJob):
             all_shingles.update(set(doc_shingles))
         all_shingles = list(all_shingles)
         all_shingles.sort()
-        for i, doc in enumerate(docs):
-            yield [i] + doc, all_shingles
+        for doc in docs:
+            yield doc, all_shingles
 
     def mapper1(self, doc, shingles):
         """For each doc, compute and return signature from it's shingles"""
