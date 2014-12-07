@@ -9,10 +9,19 @@ shingle_size = 5
 shingle_id = {}
 doc_id = {}
 
+# Time for some refactoring.
+
+# Functions.
+unique_id = 0
+def get_unique_id():
+    """Returns a unique identifier. Based on a global counter."""
+    global unique_id
+    unique_id += 1
+    return unique_id
+
 def hash_shingle(shingle):
     """Returns a base-26 number represented in base-10.
-    26 is the size of char_space. Might go higher if more characters considered.
-    """
+    26 is the size of char_space. Might go higher if more characters considered."""
     # Append a's if shingle length less than shingle_size.
     shingle += (shingle_size-len(shingle)) * 'a'
     h = 0
@@ -21,21 +30,28 @@ def hash_shingle(shingle):
         h += (l ** i) * char_id[shingle[i]]
     return h
 
+def generate_shingles(text, shingle_len):
+    """Take a string <text> and a number <shingle_len>.
+    Return the set of all it's shingles of length <shingle_len>."""
+    shingles = set()
+    for idx in xrange(1+len(text)-shingle_len):
+        shingle = text[idx:idx+shingle_len]
+        shingles.add(shingle)
+    return shingles
+
 class FindSimilarity(MRJob):
     def mapper0(self, _, line):
         """Yields a (date_hash, shingles) pair for a document."""
         doc = json.loads(line)
         date = doc['date']
+
         text = doc['text'].lower()
         text = ''.join([c for c in text if c in char_space])
+        shingles = list(generate_shingles(text, shingle_size))
 
-        # Generate shingles from text.
         # Store newfound shingles in global dict shingle_id.
-        shingles = []
-        for i in xrange(len(text)+1-shingle_size):
-            shingle = text[i:i+shingle_size]
+        for shingle in shingles:
             shingle_id.setdefault(hash_shingle(shingle), shingle)
-            shingles.append(shingle)
 
         yield 1, (hash(date), shingles)
 
