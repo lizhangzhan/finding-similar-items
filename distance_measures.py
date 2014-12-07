@@ -1,11 +1,16 @@
 # Implementation of some distance measures.
 # Namely, euclidean, jaccard, cosine, edit and hamming distances.
+import math
 
 # Helper functions.
 
 # Interface.
-def distance_euclidean():
-    pass
+def distance_euclidean(doc1, doc2, dimensions, l_norm):
+    distance = 0
+    n, r = dimensions, l_norm
+    for doc1_i, doc2_i in zip(doc1, doc2):
+        distance += pow(abs(doc1_i-doc2_i), r)
+    return pow(distance, 1.0/r)
 
 def distance_jaccard():
     pass
