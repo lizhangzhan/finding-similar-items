@@ -43,8 +43,8 @@ class FindSimilarity(MRJob):
     def mapper0(self, _, line):
         """Yields a (date_hash, shingles) pair for a document."""
         doc = json.loads(line)
-        date = doc['date']
 
+        id = get_unique_id()
         text = doc['text'].lower()
         text = ''.join([c for c in text if c in char_space])
         shingles = list(generate_shingles(text, shingle_size))
@@ -53,7 +53,7 @@ class FindSimilarity(MRJob):
         for shingle in shingles:
             shingle_id.setdefault(hash_shingle(shingle), shingle)
 
-        yield 1, (hash(date), shingles)
+        yield 1, (hash(id), shingles)
 
     def reducer0(self, _, docs):
         """Yields a (id, doc_timestamp, doc_shingles) and
