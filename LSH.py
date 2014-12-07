@@ -131,6 +131,7 @@ class FindSimilarity(MRJob):
             for j in xrange(band_len):
                 doc_hash = (doc_hash + band[j][i] * hmx) % 1000000007
             buckets.setdefault(doc_hash, [])
+            # TODO: Stuff breaks here. For good reason.
             buckets[doc_hash].append(doc_ids[i])
 
         # Yield items in the same bucket, since they are similar.
